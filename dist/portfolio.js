@@ -33,11 +33,11 @@ function showProject(hash, animate = false) {
 }
 
 function revealProject(project) {
-  project.querySelector('h3').focus({ preventScroll: true });
   const top = project.getBoundingClientRect().top;
   if (top < 0 || top > window.innerHeight * 0.75) {
     caseControls.scrollIntoView({ block: 'start' });
   }
+  project.querySelector('h3').focus();
 }
 
 function isPlainClick(event) {
@@ -60,10 +60,7 @@ caseControls.hidden = false;
 
 window.addEventListener('hashchange', () => {
   if (projectLinks.some(link => link.hash === window.location.hash)) {
-    const project = showProject(window.location.hash, true);
-    if (project.getBoundingClientRect().top >= window.innerHeight) {
-      caseControls.scrollIntoView({ block: 'start' });
-    }
+    revealProject(showProject(window.location.hash, true));
   } else if (!window.location.hash) {
     showProject(window.location.hash);
   }

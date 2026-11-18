@@ -4,7 +4,7 @@ Keerat’s portrait introduces a portfolio of three engineering projects. Use th
 
 ## Preview
 
-Open [dist/index.html](dist/index.html) in a browser. The site uses static HTML, CSS and JavaScript and needs no installation or build. If you prefer a local server, run `python3 -m http.server 4173 --bind 127.0.0.1 --directory dist` from this folder and visit [localhost:4173](http://127.0.0.1:4173).
+Open [dist/index.html](dist/index.html) in a browser. The site uses static HTML, CSS and JavaScript and needs no installation or build. If you prefer a local server, run `python3 -m http.server 4174 --bind 127.0.0.1 --directory dist` from this folder and visit [localhost:4174](http://127.0.0.1:4174).
 
 ## Sources
 

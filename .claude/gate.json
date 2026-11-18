@@ -1,0 +1,17 @@
+{
+  "steps": [
+    { "name": "portfolio JavaScript syntax", "run": "/opt/homebrew/bin/node --check dist/portfolio.js" },
+    { "name": "security audit", "run": "/opt/homebrew/bin/node /Users/keeratghuman/Projects/codex-harness/gate/codex-audit.mjs" }
+  ],
+  "env": {
+    "CODEX_BIN": "/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex",
+    "CODEX_AUDIT_MODEL": "gpt-6.2-astra"
+  },
+  "local": [],
+  "rules": [
+    "Preserve the site's content, assets, and existing user edits unless the owner explicitly requests a change.",
+    "Keep the site and repository private unless the owner explicitly approves publication.",
+    "Keep every gate check and browser QA requirement in place when fixing a failure."
+  ],
+  "tries": 5
+}

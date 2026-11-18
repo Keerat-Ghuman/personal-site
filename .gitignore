@@ -1,0 +1,6 @@
+.DS_Store
+node_modules/
+.claude/loop/
+/desktop-preview.jpg
+/phone-preview.jpg
+/phone-project-preview.jpg

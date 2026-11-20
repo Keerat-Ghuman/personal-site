@@ -1,6 +1,18 @@
 # Portfolio redesign QA
 
-The Hub tested the loopback preview in the CUA in-app browser. At each CSS viewport, the page width matched the viewport without horizontal overflow. The JPEGs are the Hub's original captures.
+## Launch captures
+
+| Capture | Pixels | What the Hub checked |
+| --- | --- | --- |
+| [Skills strip](launch-skills-375.jpg) | 375 × 812 | Local launch preview with the restored scrolling strip and its pause control. |
+| [Job Pipeline case](launch-job-pipeline-390.jpg) | 390 × 844 | Live v2 case leads with the personal workflow and credits the starter at the end. |
+| [Hero](live-hero-390.jpg) | 390 × 844 | Live v2 introduction describes software and data engineering. |
+
+The Hub checked the updated hero and cases at 390 px on the [published portfolio](https://keerat-ghuman-portfolio.eternalfairy1.chatgpt.site/). The hosted version uses a separately staged redacted Resume PDF. The private repository keeps its existing download PDF.
+
+## Baseline captures
+
+These earlier screenshots show the redesign before the launch updates. The Hub tested the loopback preview in the CUA in-app browser. At each CSS viewport, the page width matched the viewport without horizontal overflow. The JPEGs are the Hub's original captures.
 
 | Viewport | Light theme | Dark theme | Flow captures |
 | --- | --- | --- | --- |

@@ -223,10 +223,6 @@ button, summary { cursor: pointer; }
   filter: saturate(.84);
 }
 .motion-toggle {
-  position: absolute;
-  z-index: 2;
-  right: 0;
-  bottom: 1.125rem;
   min-width: 44px;
   min-height: 44px;
   padding: .5rem .75rem;
@@ -235,6 +231,12 @@ button, summary { cursor: pointer; }
   font: 650 .875rem/1.3 var(--mono);
 }
 .motion-toggle:hover { border-color: var(--accent); }
+.hero .motion-toggle {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 1.125rem;
+}
 
 .eyebrow, .dates {
   color: var(--accent);
@@ -245,20 +247,52 @@ button, summary { cursor: pointer; }
 .skills-rail { border-block: 1px solid var(--rule); }
 .skills-rail .frame {
   display: grid;
-  align-items: baseline;
-  grid-template-columns: minmax(9rem, .24fr) 1fr;
-  gap: .5rem 1.4rem;
+  align-items: start;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: .75rem 1.4rem;
   padding-block: 1.125rem;
 }
-.skills-list {
+.skills-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: .35rem clamp(1rem, 2.3vw, 2.15rem);
+  justify-content: space-between;
+  gap: .5rem 1rem;
+}
+.skills-window { align-self: center; overflow-wrap: anywhere; }
+.skills-list {
+  --skill-gap: clamp(1rem, 2.3vw, 2.15rem);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .35rem var(--skill-gap);
   margin: 0;
   padding: 0;
   color: var(--muted);
   list-style: none;
+}
+.skills-copy { display: none; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .skills-window:has(.skills-copy) { container-type: inline-size; overflow: clip; }
+  .skills-track:has(.skills-copy) {
+    display: flex;
+    width: max-content;
+    animation: skills-loop 135s linear infinite paused;
+  }
+  .skills-in-view .skills-track:has(.skills-copy) { animation-play-state: running; }
+  .skills-track:has(.skills-copy) .skills-list {
+    display: flex;
+    flex: none;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    min-width: 100cqw;
+    padding-inline-end: var(--skill-gap);
+    white-space: nowrap;
+  }
+}
+@keyframes skills-loop {
+  to { transform: translateX(-50%); }
 }
 
 .work, .experience, .education { padding-block: clamp(3rem, 8vw, 7rem); }
@@ -283,7 +317,8 @@ h2 {
   list-style: none;
 }
 .lead-project { grid-column: 1 / -1; border-bottom: 1px solid var(--rule); }
-.project-grid li:last-child { border-inline-start: 1px solid var(--rule); }
+.project-grid > li:nth-child(3) { border-inline-start: 1px solid var(--rule); }
+.project-grid > li:last-child { grid-column: 1 / -1; border-top: 1px solid var(--rule); }
 .project-tile {
   display: grid;
   align-content: start;
@@ -315,6 +350,17 @@ h2 {
   text-decoration: underline;
 }
 .project-tile:hover .tile-action { text-decoration-thickness: 2px; }
+
+@media (min-width: 58rem) {
+  .project-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .project-grid > li:last-child {
+    grid-column: auto;
+    border-top: 0;
+    border-inline-start: 1px solid var(--rule);
+  }
+  .project-tile h3 { font-size: clamp(2.8rem, 4.5vw, 6.75rem); }
+  .lead-project h3 { font-size: clamp(3.65rem, 10vw, 9.25rem); }
+}
 
 .inline-cases .project { margin-top: 3rem; padding: 2rem 0; border-top: 1px solid var(--rule); }
 dialog:not([open]) { display: none; }
@@ -502,10 +548,11 @@ dialog:not([open]) { display: none; }
     mask-image: linear-gradient(#000 60%, transparent 99%);
   }
   .portrait img { transform: translateY(-7%); }
-  .motion-toggle { bottom: .75rem; }
-  .skills-rail .frame, .project-grid, .demo-grid, .case-notes { grid-template-columns: 1fr; }
-  .project-grid li + li { border-top: 1px solid var(--rule); }
-  .project-grid li:last-child { border-inline-start: 0; }
+  .hero .motion-toggle { bottom: .75rem; }
+  .skills-rail .frame { grid-template-columns: minmax(0, 1fr); }
+  .project-grid, .demo-grid, .case-notes { grid-template-columns: 1fr; }
+  .project-grid > li + li { border-top: 1px solid var(--rule); }
+  .project-grid > li:nth-child(3) { border-inline-start: 0; }
   .lead-project { border-bottom: 0; }
   .project-tile, .lead-project .project-tile { min-height: 0; }
   .lead-project h3 { font-size: clamp(2.8rem, 11.5vw, 5.5rem); }

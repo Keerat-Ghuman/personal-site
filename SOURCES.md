@@ -8,10 +8,23 @@ Project sources were checked on 17 November 2026. Experience sources were checke
 - **Website Content Summarization:** [repository](https://github.com/KeeratGhuman/Website-Content-Summarization), README and `Scraper.py`. The source implements Google Custom Search page discovery, requests/BeautifulSoup text extraction, SeleniumBase fallback, first-two-sentence extraction, and pandas CSV export. The README explicitly describes the CSV as intended for WordPress import; no import is performed by the portfolio. The README calls it AI summarization; the site follows the implementation and does not claim an LLM.
 - **TradeOps Reconciler:** [repository](https://github.com/harshikamboj/LAHacks), current README. A local hackathon prototype: React workbench, durable MongoDB Atlas checkpoints and Vector Search, simulated broker/custodian authorities, explicit approval and receipt verification. Its investigator is deterministic. No real financial transaction occurs. Repository documentation is evidence of the project's design; this portfolio does not independently certify its historical test results.
 - **2Serious:** [repository](https://github.com/pushpinderSekhon10/2Serious), current README and Unity project structure. Three-level combat game, coins, health/damage upgrades and respawn. Keerat is named among the team acknowledgments. No supplied source establishes an individual feature contribution, so the site describes the team project without assigning individual ownership.
+- **Job Pipeline:** [Rishabh Sharma's upstream repository](https://github.com/RishabhSFI/job-pipeline). The private harness notes `wiki/projects/job-pipeline.md` and `reports/cos-handoff-2026-11-19.md` document Keerat's matching configuration, verified Google Sheets read, and CI patch. The patch isolates scoring fixtures from the personal profile and removes password values from mail setup errors. The handoff records 316 passing tests and successful macOS and Windows install checks.
 
-The site covers the three requested repositories. The extraction example uses fictional source text.
+The extraction example uses fictional source text.
 
 The downloadable résumé is byte-identical to the supplied PDF.
+
+## Technical skills
+
+The strip lists 85 unique skills from the supplied résumé, the owner-supplied role summaries in `reports/experience-source-audit-2026-11-18.md`, and the project sources above. The résumé's Sharpsight entry documents Claude API, LangGraph, Model Context Protocol (MCP), and FastMCP. The strip retains Airflow and MongoDB Atlas for the résumé's Apache Airflow and MongoDB entries. React.js, Node, MS SQL Server, and OCP4 appear as React, Node.js, SQL Server, and OpenShift.
+
+- Languages and formats: Python, Java, JavaScript, TypeScript, HTML5, CSS, C#, C++, PHP, Assembly, SQL, NoSQL, YAML.
+- Application development: FastAPI, Flask, Celery, React, Angular, Bootstrap, Streamlit, Node.js, Next.js, .NET, ASP.NET, Laravel, Eloquent ORM, Unity, REST APIs, OAuth 2.0, Responsive web design.
+- Databases: PostgreSQL, MySQL, SQL Server, SQL Server Management Studio, MongoDB Atlas, Redis, Snowflake, Trino, Apache Hive.
+- Data engineering and reporting: Data modeling, SQL query optimization, Stored procedures and triggers, ETL, Data quality testing, Airflow, Apache Spark, PySpark, Databricks, dbt, pandas, Looker, Power BI, Tableau, Google Sheets.
+- Web data and AI: Web scraping, Google Custom Search, Requests, Beautiful Soup, SeleniumBase, TensorFlow, Voyage, AI evaluation, Claude Code, OpenAI Codex, OpenAI API, Claude API, LangGraph, Model Context Protocol (MCP), FastMCP.
+- Development and deployment: Git, Docker, Kubernetes, OpenShift, AWS S3, AWS Lambda, CI/CD, GitHub Actions, Jenkins, Azure DevOps, Visual Studio.
+- Enterprise tools: PAN-OS, NetBrain, AlgoSec FireFlow, Archer, ServiceNow.
 
 ## Redesign assets
 
@@ -20,4 +33,4 @@ The downloadable résumé is byte-identical to the supplied PDF.
 
 ## Interactive revision
 
-The sample runs locally. It collapses whitespace, splits after sentence-ending punctuation followed by whitespace, and retains the first two sentences. The tools list comes from the supplied résumé and the three repositories.
+The sample runs locally. It collapses whitespace, splits after sentence-ending punctuation followed by whitespace, and retains the first two sentences.

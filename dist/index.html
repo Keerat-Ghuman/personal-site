@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Keerat Ghuman’s software engineering portfolio. Case studies in web data processing, trade reconciliation, and game development.">
+  <meta name="description" content="Keerat Ghuman’s software engineering portfolio. Case studies in web data processing, trade reconciliation, game development, and job search.">
   <meta name="color-scheme" content="dark light">
   <script>
     try {
@@ -26,37 +26,58 @@
         <a href="#contact">Contact</a>
       </nav>
       <div class="header-actions">
-        <a class="header-resume" href="assets/keerat-ghuman-resume.pdf" download>Résumé</a>
+        <a class="header-resume" href="assets/keerat-ghuman-resume.pdf" download>Resume</a>
         <button type="button" class="theme-toggle" aria-pressed="false" hidden>Dark mode</button>
       </div>
     </div>
   </header>
   <main id="main" tabindex="-1">
     <section class="hero" aria-labelledby="hero-title">
-      <canvas class="hero-contours" aria-hidden="true"></canvas>
+      <canvas class="hero-contours" id="hero-contours" aria-hidden="true"></canvas>
       <div class="frame hero-inner">
         <h1 id="hero-title"><span>Keerat</span> <span>Ghuman</span></h1>
         <div class="hero-copy">
           <p class="hero-intro">I’m a software engineering student at Western University. I’ve built tools for firewall approvals, data quality checks, and collecting and summarizing web content.</p>
           <div class="hero-actions">
             <a class="hero-link" href="#projects">Explore my work</a>
-            <a class="text-link" href="assets/keerat-ghuman-resume.pdf" download>Résumé</a>
+            <a class="text-link" href="assets/keerat-ghuman-resume.pdf" download>Resume</a>
           </div>
         </div>
         <figure class="portrait">
           <img src="assets/keerat-ghuman-portrait.jpg" width="1200" height="1800" alt="Portrait of Keerat Ghuman" fetchpriority="high">
         </figure>
-        <button type="button" class="motion-toggle" hidden>Pause motion</button>
+        <button type="button" class="motion-toggle" aria-controls="hero-contours skills-track" hidden>Pause motion</button>
       </div>
     </section>
 
     <section class="skills-rail" aria-labelledby="skills-title">
       <div class="frame">
-        <h2 class="eyebrow" id="skills-title">Tools I work with</h2>
-        <ul class="skills-list">
-          <li>Python</li><li>FastAPI</li><li>React</li><li>PostgreSQL</li><li>MongoDB Atlas</li>
-          <li>Airflow</li><li>PySpark</li><li>SQL</li><li>dbt</li><li>Unity</li><li>C#</li>
-        </ul>
+        <div class="skills-header">
+          <h2 class="eyebrow" id="skills-title">Technical skills</h2>
+          <button type="button" class="motion-toggle" aria-controls="hero-contours skills-track" hidden>Pause motion</button>
+        </div>
+        <div class="skills-window">
+          <div class="skills-track" id="skills-track">
+            <ul class="skills-list" role="list">
+              <li>Python</li><li>Java</li><li>JavaScript</li><li>TypeScript</li><li>HTML5</li><li>CSS</li>
+              <li>C#</li><li>C++</li><li>PHP</li><li>Assembly</li><li>SQL</li><li>NoSQL</li><li>YAML</li>
+              <li>FastAPI</li><li>Flask</li><li>Celery</li><li>React</li><li>Angular</li><li>Bootstrap</li>
+              <li>Streamlit</li><li>Node.js</li><li>Next.js</li><li>.NET</li><li>ASP.NET</li>
+              <li>Laravel</li><li>Eloquent ORM</li><li>Unity</li><li>REST APIs</li><li>OAuth 2.0</li><li>Responsive web design</li>
+              <li>PostgreSQL</li><li>MySQL</li><li>SQL Server</li><li>SQL Server Management Studio</li>
+              <li>MongoDB Atlas</li><li>Redis</li><li>Snowflake</li><li>Trino</li><li>Apache Hive</li>
+              <li>Data modeling</li><li>SQL query optimization</li><li>Stored procedures and triggers</li><li>ETL</li><li>Data quality testing</li>
+              <li>Airflow</li><li>Apache Spark</li><li>PySpark</li><li>Databricks</li><li>dbt</li><li>pandas</li>
+              <li>Looker</li><li>Power BI</li><li>Tableau</li><li>Google Sheets</li><li>Web scraping</li>
+              <li>Google Custom Search</li><li>Requests</li><li>Beautiful Soup</li><li>SeleniumBase</li>
+              <li>TensorFlow</li><li>Voyage</li><li>AI evaluation</li><li>Claude Code</li><li>OpenAI Codex</li><li>OpenAI API</li>
+              <li>Claude API</li><li>LangGraph</li><li>Model Context Protocol (MCP)</li><li>FastMCP</li>
+              <li>Git</li><li>Docker</li><li>Kubernetes</li><li>OpenShift</li><li>AWS S3</li><li>AWS Lambda</li>
+              <li>CI/CD</li><li>GitHub Actions</li><li>Jenkins</li><li>Azure DevOps</li><li>Visual Studio</li>
+              <li>PAN-OS</li><li>NetBrain</li><li>AlgoSec FireFlow</li><li>Archer</li><li>ServiceNow</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -87,6 +108,14 @@
               <span class="eyebrow tile-category">Unity game</span>
               <h3>2Serious</h3>
               <p>A three-level combat game where coins buy health or damage upgrades.</p>
+              <span class="tile-action">Read case study</span>
+            </a>
+          </li>
+          <li>
+            <a class="project-tile" id="launch-job-pipeline" href="#job-pipeline">
+              <span class="eyebrow tile-category">Job search</span>
+              <h3>Job Pipeline</h3>
+              <p>A private dashboard tuned to my search for internships and new-grad roles.</p>
               <span class="tile-action">Read case study</span>
             </a>
           </li>
@@ -153,6 +182,19 @@
           </dl>
           <p class="stack">Unity · C#</p>
         </article>
+
+        <article class="project" id="job-pipeline" aria-labelledby="job-pipeline-title">
+          <p class="eyebrow">Personal adaptation</p>
+          <h3 id="job-pipeline-title" tabindex="-1">Job Pipeline</h3>
+          <p class="project-lede">I adapted Rishabh Sharma's job-search project to review roles in a private dashboard.</p>
+          <a class="text-link" href="https://github.com/RishabhSFI/job-pipeline">View Rishabh Sharma's upstream repository</a>
+          <dl class="case-notes">
+            <div><dt>Matching</dt><dd>I configured matching for software, data, and machine learning roles in Canada and for US roles that offer sponsorship.</dd></div>
+            <div><dt>Workflow</dt><dd>I connected Google Sheets and verified that the dashboard could read it. The dashboard gives me a place to review matches before applying.</dd></div>
+            <div><dt>Testing</dt><dd>I isolated scoring tests from my personal profile and removed password values from mail setup errors. All 316 tests passed, along with the macOS and Windows install checks.</dd></div>
+          </dl>
+          <p class="stack">Next.js · Node.js · Google Sheets</p>
+        </article>
         <a class="index-return" href="#project-index">Back to project index</a>
       </div>
 
@@ -173,7 +215,7 @@
     <section class="experience frame" id="experience" tabindex="-1" aria-labelledby="experience-title">
       <div class="section-heading">
         <h2 id="experience-title">Experience</h2>
-        <a class="text-link" href="assets/keerat-ghuman-resume.pdf" download>Download résumé</a>
+        <a class="text-link" href="assets/keerat-ghuman-resume.pdf" download>Download resume</a>
       </div>
       <div class="career-list">
         <details class="career-entry">

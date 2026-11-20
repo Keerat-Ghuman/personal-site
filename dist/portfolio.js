@@ -202,20 +202,22 @@ function traceContours(context, width, height, centerX, centerY, aspect, time) {
   context.stroke();
 }
 
-function initContours() {
+function initMotion() {
   const hero = document.querySelector('.hero');
   const canvas = hero.querySelector('canvas');
   const context = canvas.getContext('2d');
-  if (!context) return;
-
-  const button = hero.querySelector('.motion-toggle');
+  const skillsWindow = document.querySelector('.skills-window');
+  const skills = skillsWindow.querySelector('.skills-list');
+  const buttons = document.querySelectorAll('.motion-toggle');
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const colorPreference = matchMedia('(prefers-color-scheme: dark)');
   const finePointer = matchMedia('(any-pointer: fine)');
   const portraitBelowCopy = matchMedia('(max-width: 39rem)');
-  let playing = !reducedMotion.matches;
-  let motionChoice;
-  let inView = false;
+  let playing = false;
+  let paused = false;
+  let heroInView = false;
+  let skillsInView = false;
+  let skillsCopy;
   let frame = null;
   let lastDraw = null;
   let time = 0;
@@ -235,11 +237,13 @@ function initContours() {
   }
 
   function applyColor() {
+    if (!context) return;
     context.strokeStyle = getComputedStyle(canvas).color;
     draw();
   }
 
   function resize() {
+    if (!context) return;
     const bounds = hero.getBoundingClientRect();
     const cssWidth = Math.round(bounds.width);
     const cssHeight = Math.round(bounds.height);
@@ -267,7 +271,8 @@ function initContours() {
   }
 
   function syncAnimation() {
-    if (playing && inView && !document.hidden) {
+    skillsWindow.classList.toggle('skills-in-view', skillsInView && !document.hidden);
+    if (context && playing && heroInView && !document.hidden) {
       if (frame === null) frame = requestAnimationFrame(animate);
     } else if (frame !== null) {
       cancelAnimationFrame(frame);
@@ -276,9 +281,22 @@ function initContours() {
     }
   }
 
-  function setPlaying(value) {
-    playing = value;
-    button.textContent = playing ? 'Pause motion' : 'Play motion';
+  function updateMotion() {
+    playing = !reducedMotion.matches && !paused;
+    if (playing && !skillsCopy) {
+      skillsCopy = skills.cloneNode(true);
+      skillsCopy.classList.add('skills-copy');
+      skillsCopy.setAttribute('aria-hidden', 'true');
+      skills.after(skillsCopy);
+    } else if (!playing && skillsCopy) {
+      skillsCopy.remove();
+      skillsCopy = undefined;
+    }
+    for (const button of buttons) {
+      button.hidden = reducedMotion.matches || (!context && hero.contains(button));
+      button.textContent = playing ? 'Pause motion' : 'Play motion';
+    }
+    if (!playing) resetPointer();
     syncAnimation();
   }
 
@@ -294,27 +312,32 @@ function initContours() {
     pointer.y = ((event.clientY - bounds.top) / bounds.height - .5) * .11;
   }, { passive: true });
   hero.addEventListener('pointerleave', resetPointer);
-  button.addEventListener('click', () => {
-    if (playing) resetPointer();
-    motionChoice = !playing;
-    setPlaying(motionChoice);
-  });
-  reducedMotion.addEventListener('change', () => {
-    resetPointer();
-    setPlaying(!reducedMotion.matches && motionChoice !== false);
-  });
+  for (const button of buttons) {
+    button.addEventListener('click', () => {
+      paused = !paused;
+      updateMotion();
+    });
+  }
+  reducedMotion.addEventListener('change', updateMotion);
   colorPreference.addEventListener('change', applyColor);
   document.documentElement.addEventListener('portfolio-theme-change', applyColor);
   document.addEventListener('visibilitychange', syncAnimation);
   window.addEventListener('resize', resize);
   new ResizeObserver(resize).observe(hero);
-  new IntersectionObserver(([entry]) => {
-    inView = entry.isIntersecting;
-    if (!inView) resetPointer();
+  const observer = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (entry.target === hero) {
+        heroInView = entry.isIntersecting;
+        if (!heroInView) resetPointer();
+      } else {
+        skillsInView = entry.isIntersecting;
+      }
+    }
     syncAnimation();
-  }).observe(hero);
-  setPlaying(playing);
-  button.hidden = false;
+  });
+  observer.observe(hero);
+  observer.observe(skillsWindow);
+  updateMotion();
   resize();
 }
 
@@ -326,4 +349,4 @@ if (portrait.complete && portrait.naturalWidth === 0) hideUnavailablePortrait();
 initExtraction();
 initCaseReader();
 initTheme();
-initContours();
+initMotion();

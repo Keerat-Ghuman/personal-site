@@ -1,129 +1,352 @@
-const projectNavigation = document.querySelector('#project-index');
-const projectLinks = [...projectNavigation.querySelectorAll('a')];
-const projects = projectLinks.map(link => document.getElementById(link.hash.slice(1)));
-const caseControls = document.querySelector('.case-controls');
-const caseLinks = [...caseControls.querySelectorAll('a')];
-const caseNumber = caseControls.querySelector('[data-project-number]');
-let activeProject;
+function initCaseReader() {
+  const reader = document.querySelector('.case-reader');
+  if (typeof reader.showModal !== 'function') return;
 
-function showProject(hash, animate = false) {
-  const requestedIndex = projectLinks.findIndex(link => link.hash === hash);
-  const selectedIndex = requestedIndex === -1 ? 0 : requestedIndex;
-
-  projectLinks.forEach((link, index) => {
-    const active = index === selectedIndex;
-    projects[index].hidden = !active;
-    if (active) link.setAttribute('aria-current', 'true');
-    else link.removeAttribute('aria-current');
+  const inlineCases = document.querySelector('.inline-cases');
+  const body = reader.querySelector('.reader-body');
+  const cases = [...document.querySelectorAll('.project-tile')].map(launcher => {
+    const article = document.getElementById(launcher.hash.slice(1));
+    const heading = document.getElementById(article.getAttribute('aria-labelledby'));
+    const slot = document.createComment('');
+    article.before(slot);
+    return { hash: launcher.hash, launcher, article, heading, slot };
   });
+  let activeCase;
+  let openingTile;
+  let pendingDismissal = false;
+  let historyFrame = 0;
 
-  caseLinks.forEach(link => {
-    const step = Number(link.dataset.projectStep);
-    const index = (selectedIndex + step + projects.length) % projects.length;
-    link.href = projectLinks[index].hash;
-    link.querySelector('strong').textContent = projects[index].querySelector('h3').textContent;
-  });
-  caseNumber.textContent = selectedIndex + 1;
-
-  const selectedProject = projects[selectedIndex];
-  projects.forEach(project => project.classList.remove('case-enter'));
-  if (animate && selectedProject !== activeProject) selectedProject.classList.add('case-enter');
-  activeProject = selectedProject;
-  return selectedProject;
-}
-
-function revealProject(project) {
-  project.querySelector('h3').focus({ preventScroll: true });
-  const top = project.getBoundingClientRect().top;
-  if (top < 0 || top > window.innerHeight * 0.75) {
-    caseControls.scrollIntoView({ block: 'start' });
+  function restoreTile(launcher) {
+    requestAnimationFrame(() => {
+      if (reader.open || cases.some(project => project.hash === location.hash)) return;
+      launcher.scrollIntoView({ block: 'nearest' });
+      launcher.focus({ preventScroll: true });
+    });
   }
-}
 
-function isPlainClick(event) {
-  return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
-}
-
-showProject(window.location.hash);
-projectNavigation.classList.add('is-enhanced');
-caseControls.hidden = false;
-
-[...projectLinks, ...caseLinks].forEach(link => {
-  link.addEventListener('click', event => {
-    if (!isPlainClick(event)) return;
-
-    event.preventDefault();
-    if (window.location.hash !== link.hash) history.pushState(null, '', link.hash);
-    revealProject(showProject(link.hash, true));
-  });
-});
-
-window.addEventListener('hashchange', () => {
-  if (projectLinks.some(link => link.hash === window.location.hash)) {
-    const project = showProject(window.location.hash, true);
-    if (project.getBoundingClientRect().top >= window.innerHeight) {
-      caseControls.scrollIntoView({ block: 'start' });
+  function syncReader() {
+    const nextCase = cases.find(project => project.hash === location.hash);
+    const marker = history.state?.portfolioOpeningTile;
+    const nextOpeningTile = cases.find(project => project.launcher.id === marker)?.launcher;
+    if (nextCase === activeCase) {
+      openingTile = nextOpeningTile;
+      return;
     }
-  } else if (!window.location.hash) {
-    showProject(window.location.hash);
+
+    if (activeCase) activeCase.slot.after(activeCase.article);
+    if (!nextCase) {
+      const launcher = openingTile ?? activeCase.launcher;
+      activeCase = undefined;
+      openingTile = undefined;
+      pendingDismissal = false;
+      reader.close();
+      restoreTile(launcher);
+      return;
+    }
+
+    activeCase = nextCase;
+    openingTile = nextOpeningTile;
+    pendingDismissal = false;
+    body.append(activeCase.article);
+    reader.setAttribute('aria-labelledby', activeCase.heading.id);
+    if (!reader.open) reader.showModal();
+    body.scrollTop = 0;
+    activeCase.heading.focus({ preventScroll: true });
   }
-});
 
-const indexReturn = document.querySelector('.index-return');
-indexReturn.addEventListener('click', event => {
-  if (!isPlainClick(event)) return;
+  function dismissReader() {
+    if (pendingDismissal) return;
+    if (openingTile) {
+      pendingDismissal = true;
+      history.back();
+      return;
+    }
+    history.replaceState(history.state, '', '#projects');
+    syncReader();
+  }
 
-  event.preventDefault();
-  projectNavigation.querySelector('[aria-current]')?.focus({ preventScroll: true });
-  projectNavigation.scrollIntoView({ block: 'start' });
-});
+  for (const project of cases) {
+    project.launcher.setAttribute('aria-haspopup', 'dialog');
+    project.launcher.addEventListener('click', event => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      history.pushState({ portfolioOpeningTile: project.launcher.id }, '', project.hash);
+      syncReader();
+    });
+  }
 
-const demo = document.querySelector('.extraction-demo');
-const sourceText = demo.querySelector('textarea');
-const extractedText = demo.querySelector('output');
-demo.querySelector('button').addEventListener('click', () => {
-  const cleaned = sourceText.value.replace(/\s+/g, ' ').trim();
-  extractedText.textContent = cleaned
-    ? cleaned.split(/(?<=[.!?])\s+/).slice(0, 2).join(' ')
-    : 'Enter some text to extract the first two sentences.';
-});
-demo.hidden = false;
-document.querySelector('.example').hidden = true;
+  for (const button of reader.querySelectorAll('[data-project-step]')) {
+    const step = Number(button.dataset.projectStep);
+    button.addEventListener('click', () => {
+      if (pendingDismissal) return;
+      const index = cases.indexOf(activeCase);
+      const nextCase = cases[(index + step + cases.length) % cases.length];
+      history.replaceState(history.state, '', nextCase.hash);
+      syncReader();
+    });
+  }
+
+  reader.querySelector('.reader-close').addEventListener('click', dismissReader);
+  reader.addEventListener('cancel', event => {
+    event.preventDefault();
+    dismissReader();
+  });
+
+  function queueHistorySync() {
+    if (historyFrame) return;
+    historyFrame = requestAnimationFrame(() => {
+      historyFrame = 0;
+      syncReader();
+    });
+  }
+
+  window.addEventListener('popstate', queueHistorySync);
+  window.addEventListener('hashchange', queueHistorySync);
+  inlineCases.hidden = true;
+  syncReader();
+}
+
+function initExtraction() {
+  const demo = document.querySelector('.extraction-demo');
+  const sourceText = demo.querySelector('textarea');
+  const extractedText = demo.querySelector('output');
+  demo.querySelector('button').addEventListener('click', () => {
+    const cleaned = sourceText.value.replace(/\s+/g, ' ').trim();
+    extractedText.textContent = cleaned
+      ? cleaned.split(/(?<=[.!?])\s+/).slice(0, 2).join(' ')
+      : 'Enter some text to extract the first two sentences.';
+  });
+  demo.hidden = false;
+  document.querySelector('.example').hidden = true;
+}
+
+function initTheme() {
+  const root = document.documentElement;
+  const button = document.querySelector('.theme-toggle');
+  const preference = matchMedia('(prefers-color-scheme: dark)');
+  const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : preference.matches;
+  const updateButton = () => button.setAttribute('aria-pressed', String(isDark()));
+
+  button.addEventListener('click', () => {
+    root.dataset.theme = isDark() ? 'light' : 'dark';
+    try {
+      localStorage.setItem('portfolio-theme', root.dataset.theme);
+    } catch {}
+    updateButton();
+    root.dispatchEvent(new Event('portfolio-theme-change'));
+  });
+  preference.addEventListener('change', updateButton);
+  updateButton();
+  button.hidden = false;
+}
+
+function traceContours(context, width, height, centerX, centerY, aspect, time) {
+  const contourInterval = .038;
+  const columns = Math.ceil(width / 18);
+  const rows = Math.ceil(height / 18);
+  const cellWidth = width / columns;
+  const cellHeight = height / rows;
+  const stride = columns + 1;
+  const samples = new Float32Array(stride * (rows + 1));
+
+  for (let row = 0; row <= rows; row++) {
+    for (let column = 0; column <= columns; column++) {
+      const x = (column / columns - centerX) * aspect;
+      const y = row / rows - centerY;
+      const foldedX = x + .11 * Math.sin(y * 7.5 + time + 1.3);
+      const foldedY = y + .085 * Math.sin(x * 8 - time + 2.1);
+      samples[row * stride + column] = Math.hypot(foldedX, foldedY * .84);
+    }
+  }
+
+  context.beginPath();
+  for (let row = 0; row < rows; row++) {
+    for (let column = 0; column < columns; column++) {
+      const index = row * stride + column;
+      const topLeft = samples[index];
+      const topRight = samples[index + 1];
+      const bottomLeft = samples[index + stride];
+      const bottomRight = samples[index + stride + 1];
+      const minimum = Math.min(topLeft, topRight, bottomLeft, bottomRight);
+      const maximum = Math.max(topLeft, topRight, bottomLeft, bottomRight);
+      const x = column * cellWidth;
+      const y = row * cellHeight;
+
+      // Interpolate crossings on a shared grid so adjacent cells meet at the same point.
+      for (let level = Math.max(5, Math.floor(minimum / contourInterval) + 1); level * contourInterval <= maximum; level++) {
+        const threshold = level * contourInterval;
+        const crossings = [];
+        if ((topLeft >= threshold) !== (topRight >= threshold)) {
+          crossings.push([x + cellWidth * (threshold - topLeft) / (topRight - topLeft), y]);
+        }
+        if ((topRight >= threshold) !== (bottomRight >= threshold)) {
+          crossings.push([x + cellWidth, y + cellHeight * (threshold - topRight) / (bottomRight - topRight)]);
+        }
+        if ((bottomLeft >= threshold) !== (bottomRight >= threshold)) {
+          crossings.push([x + cellWidth * (threshold - bottomLeft) / (bottomRight - bottomLeft), y + cellHeight]);
+        }
+        if ((topLeft >= threshold) !== (bottomLeft >= threshold)) {
+          crossings.push([x, y + cellHeight * (threshold - topLeft) / (bottomLeft - topLeft)]);
+        }
+        if (crossings.length === 4) {
+          const center = (topLeft + topRight + bottomLeft + bottomRight) / 4;
+          if ((center >= threshold) !== (topLeft >= threshold)) crossings.push(crossings.shift());
+        }
+        for (let edge = 0; edge < crossings.length; edge += 2) {
+          context.moveTo(...crossings[edge]);
+          context.lineTo(...crossings[edge + 1]);
+        }
+      }
+    }
+  }
+  context.stroke();
+}
+
+function initMotion() {
+  const hero = document.querySelector('.hero');
+  const canvas = hero.querySelector('canvas');
+  const context = canvas.getContext('2d');
+  const skillsWindow = document.querySelector('.skills-window');
+  const skills = skillsWindow.querySelector('.skills-list');
+  const buttons = document.querySelectorAll('.motion-toggle');
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const colorPreference = matchMedia('(prefers-color-scheme: dark)');
+  const finePointer = matchMedia('(any-pointer: fine)');
+  const portraitBelowCopy = matchMedia('(max-width: 39rem)');
+  let playing = false;
+  let paused = false;
+  let heroInView = false;
+  let skillsInView = false;
+  let skillsCopy;
+  let frame = null;
+  let lastDraw = null;
+  let time = 0;
+  let width = 0;
+  let height = 0;
+  const pointer = { x: 0, y: 0 };
+  const offset = { x: 0, y: 0 };
+
+  function draw() {
+    if (!width || !height) return;
+    const narrow = portraitBelowCopy.matches;
+    const centerX = (narrow ? .62 : .69) + offset.x + .025 * Math.sin(time * .83);
+    const centerY = (narrow ? .71 : .38) + offset.y + .027 * Math.sin(time);
+    const aspect = Math.min(2.1, Math.max(.82, width / height));
+    context.clearRect(0, 0, width, height);
+    traceContours(context, width, height, centerX, centerY, aspect, time);
+  }
+
+  function applyColor() {
+    if (!context) return;
+    context.strokeStyle = getComputedStyle(canvas).color;
+    draw();
+  }
+
+  function resize() {
+    if (!context) return;
+    const bounds = hero.getBoundingClientRect();
+    const cssWidth = Math.round(bounds.width);
+    const cssHeight = Math.round(bounds.height);
+    if (!cssWidth || !cssHeight) return;
+    const scale = Math.min(2, window.devicePixelRatio || 1, 2048 / Math.max(cssWidth, cssHeight));
+    canvas.width = Math.round(cssWidth * scale);
+    canvas.height = Math.round(cssHeight * scale);
+    width = Math.min(cssWidth, 1440);
+    height = Math.min(cssHeight, 1000);
+    context.setTransform(canvas.width / width, 0, 0, canvas.height / height, 0, 0);
+    context.lineWidth = 1.15;
+    applyColor();
+  }
+
+  function animate(now) {
+    const elapsed = lastDraw === null ? 0 : now - lastDraw;
+    if (lastDraw === null || elapsed >= 1000 / 30) {
+      lastDraw = now;
+      time += Math.min(elapsed, 60) * .0004;
+      offset.x += (pointer.x - offset.x) * .075;
+      offset.y += (pointer.y - offset.y) * .075;
+      draw();
+    }
+    frame = requestAnimationFrame(animate);
+  }
+
+  function syncAnimation() {
+    skillsWindow.classList.toggle('skills-in-view', skillsInView && !document.hidden);
+    if (context && playing && heroInView && !document.hidden) {
+      if (frame === null) frame = requestAnimationFrame(animate);
+    } else if (frame !== null) {
+      cancelAnimationFrame(frame);
+      frame = null;
+      lastDraw = null;
+    }
+  }
+
+  function updateMotion() {
+    playing = !reducedMotion.matches && !paused;
+    if (playing && !skillsCopy) {
+      skillsCopy = skills.cloneNode(true);
+      skillsCopy.classList.add('skills-copy');
+      skillsCopy.setAttribute('aria-hidden', 'true');
+      skills.after(skillsCopy);
+    } else if (!playing && skillsCopy) {
+      skillsCopy.remove();
+      skillsCopy = undefined;
+    }
+    for (const button of buttons) {
+      button.hidden = reducedMotion.matches || (!context && hero.contains(button));
+      button.textContent = playing ? 'Pause motion' : 'Play motion';
+    }
+    if (!playing) resetPointer();
+    syncAnimation();
+  }
+
+  function resetPointer() {
+    pointer.x = 0;
+    pointer.y = 0;
+  }
+
+  hero.addEventListener('pointermove', event => {
+    if (!playing || !finePointer.matches || event.pointerType === 'touch') return;
+    const bounds = hero.getBoundingClientRect();
+    pointer.x = ((event.clientX - bounds.left) / bounds.width - .5) * .13;
+    pointer.y = ((event.clientY - bounds.top) / bounds.height - .5) * .11;
+  }, { passive: true });
+  hero.addEventListener('pointerleave', resetPointer);
+  for (const button of buttons) {
+    button.addEventListener('click', () => {
+      paused = !paused;
+      updateMotion();
+    });
+  }
+  reducedMotion.addEventListener('change', updateMotion);
+  colorPreference.addEventListener('change', applyColor);
+  document.documentElement.addEventListener('portfolio-theme-change', applyColor);
+  document.addEventListener('visibilitychange', syncAnimation);
+  window.addEventListener('resize', resize);
+  new ResizeObserver(resize).observe(hero);
+  const observer = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (entry.target === hero) {
+        heroInView = entry.isIntersecting;
+        if (!heroInView) resetPointer();
+      } else {
+        skillsInView = entry.isIntersecting;
+      }
+    }
+    syncAnimation();
+  });
+  observer.observe(hero);
+  observer.observe(skillsWindow);
+  updateMotion();
+  resize();
+}
 
 const portrait = document.querySelector('.portrait img');
-if (portrait) {
-  const hideUnavailablePortrait = () => { portrait.closest('.portrait').hidden = true; };
-  portrait.addEventListener('error', hideUnavailablePortrait);
-  if (portrait.complete && portrait.naturalWidth === 0) hideUnavailablePortrait();
-}
+const hideUnavailablePortrait = () => { portrait.closest('.portrait').hidden = true; };
+portrait.addEventListener('error', hideUnavailablePortrait);
+if (portrait.complete && portrait.naturalWidth === 0) hideUnavailablePortrait();
 
-const skills = document.querySelector('.skills-list');
-const duplicateSkills = skills.cloneNode(true);
-duplicateSkills.classList.add('skills-copy');
-duplicateSkills.setAttribute('aria-hidden', 'true');
-skills.after(duplicateSkills);
-
-const page = document.documentElement;
-const motionButton = document.querySelector('.motion-toggle');
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-let motionPaused = false;
-
-function updateMotion() {
-  page.classList.toggle('motion-enabled', !reducedMotion.matches);
-  page.classList.toggle('motion-paused', motionPaused);
-  motionButton.disabled = reducedMotion.matches;
-  motionButton.textContent = reducedMotion.matches ? 'Motion off · device setting' : (motionPaused ? 'Resume motion' : 'Pause motion');
-  if (motionPaused || reducedMotion.matches) {
-    page.classList.remove('hero-enter');
-    projects.forEach(project => project.classList.remove('case-enter'));
-  }
-}
-
-motionButton.addEventListener('click', () => {
-  motionPaused = !motionPaused;
-  updateMotion();
-});
-reducedMotion.addEventListener('change', updateMotion);
-if (!reducedMotion.matches) page.classList.add('hero-enter');
-updateMotion();
-motionButton.hidden = false;
+initExtraction();
+initCaseReader();
+initTheme();
+initMotion();

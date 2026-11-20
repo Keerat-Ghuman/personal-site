@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "",
+  "buildCommand": "test -s dist/index.html && test -s dist/styles.css && test -s dist/assets/keerat-ghuman-resume.pdf && node --check dist/portfolio.js",
+  "outputDirectory": "dist"
+}
